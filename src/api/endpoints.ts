@@ -62,3 +62,4 @@ export const getMyOrders = (): Promise<OrderDto[]> =>
 
 export const getAllOrders = (): Promise<OrderDto[]> =>
   apiClient.get('/orders').then((r) => r.data);
+//api callları tek bir yerden yapılandırmak için
