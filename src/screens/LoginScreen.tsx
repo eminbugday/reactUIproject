@@ -20,6 +20,7 @@ type Props = AuthScreenProps<'Login'>;
 export default function LoginScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { signIn } = useAuth();
   const { mutate, loading, error } = useMutation(login);
 
@@ -29,7 +30,7 @@ export default function LoginScreen({ navigation }: Props) {
       const response = await mutate({ email: email.trim(), password });
       await signIn(response);
     } catch {
-      // error state handled by useMutation
+      // handled by useMutation
     }
   };
 
@@ -55,15 +56,32 @@ export default function LoginScreen({ navigation }: Props) {
             value={email}
             onChangeText={setEmail}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Şifre"
-            placeholderTextColor="#86868b"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            onSubmitEditing={handleLogin}
-          />
+
+          <View style={styles.passwordWrapper}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Şifre"
+              placeholderTextColor="#86868b"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              onSubmitEditing={handleLogin}
+            />
+            <TouchableOpacity
+              style={styles.eyeBtn}
+              onPress={() => setShowPassword((v) => !v)}
+            >
+              <Text style={styles.eyeText}>{showPassword ? '🙈' : '👁️'}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Forgot password link */}
+          <TouchableOpacity
+            style={styles.forgotRow}
+            onPress={() => navigation.navigate('ForgotPassword')}
+          >
+            <Text style={styles.forgotText}>Şifremi Unuttum</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -96,12 +114,7 @@ export default function LoginScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#f5f5f7' },
-  container: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
+  container: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   card: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -116,19 +129,8 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
   },
   logo: { fontSize: 40, textAlign: 'center', marginBottom: 8 },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1d1d1f',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#86868b',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
+  title: { fontSize: 28, fontWeight: '700', color: '#1d1d1f', textAlign: 'center', marginBottom: 4 },
+  subtitle: { fontSize: 15, color: '#86868b', textAlign: 'center', marginBottom: 24 },
   errorText: {
     backgroundColor: '#fff0f0',
     color: '#ff3b30',
@@ -148,27 +150,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f7',
     marginBottom: 12,
   },
+  passwordWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#d2d2d7',
+    borderRadius: 10,
+    backgroundColor: '#f5f5f7',
+    marginBottom: 8,
+  },
+  passwordInput: { flex: 1, padding: 12, fontSize: 15, color: '#1d1d1f' },
+  eyeBtn: { paddingHorizontal: 12 },
+  eyeText: { fontSize: 18 },
+  forgotRow: { alignSelf: 'flex-end', marginBottom: 16 },
+  forgotText: { fontSize: 13, color: '#0071e3', fontWeight: '500' },
   button: {
     backgroundColor: '#0071e3',
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
-    marginTop: 8,
   },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-  linkRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
+  linkRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 20 },
   linkText: { fontSize: 14, color: '#86868b' },
   linkBold: { color: '#0071e3', fontWeight: '600' },
-  hint: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: '#f0f7ff',
-    borderRadius: 8,
-  },
+  hint: { marginTop: 20, padding: 10, backgroundColor: '#f0f7ff', borderRadius: 8 },
   hintText: { fontSize: 12, color: '#0071e3', textAlign: 'center' },
 });

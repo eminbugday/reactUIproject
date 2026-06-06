@@ -13,6 +13,7 @@ import { useMutation } from '../../api/useMutation';
 import { getUsers, deleteUser } from '../../api/endpoints';
 import UserEditModal from '../../components/UserEditModal';
 import type { UserDto } from '../../api/types';
+import { getCreditData, scoreColor, formatBalance } from '../../utils/creditScore';
 
 export default function UsersAdminScreen() {
   const { data: users, loading, error, refetch } = useQuery<UserDto[]>(getUsers);
@@ -50,7 +51,6 @@ export default function UsersAdminScreen() {
 
   return (
     <View style={styles.root}>
-      {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>Kullanıcı Yönetimi</Text>
@@ -63,7 +63,6 @@ export default function UsersAdminScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Content */}
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#0071e3" />
@@ -76,62 +75,126 @@ export default function UsersAdminScreen() {
           </TouchableOpacity>
         </View>
       ) : (
-        <ScrollView style={styles.scroll}>
-          {/* Table header */}
-          <View style={styles.tableHeader}>
-            <Text style={[styles.th, { flex: 2 }]}>Ad Soyad</Text>
-            <Text style={[styles.th, { flex: 2.5 }]}>E-posta</Text>
-            <Text style={[styles.th, { flex: 1 }]}>Rol</Text>
-            <Text style={[styles.th, { flex: 1 }]}>Durum</Text>
-            <Text style={[styles.th, { flex: 1.5 }]}>Kayıt Tarihi</Text>
-            <Text style={[styles.th, { width: 90, textAlign: 'right' }]}>İşlem</Text>
-          </View>
+        <ScrollView style={styles.scroll} horizontal={false}>
+          <ScrollView horizontal showsHorizontalScrollIndicator>
+            <View>
+              {/* Table header */}
+              <View style={styles.tableHeader}>
+                <Text style={[styles.th, { width: 130 }]}>Ad Soyad</Text>
+                <Text style={[styles.th, { width: 160 }]}>E-posta</Text>
+                <Text style={[styles.th, { width: 70 }]}>Rol</Text>
+                <Text style={[styles.th, { width: 60 }]}>Durum</Text>
+                <Text style={[styles.th, { width: 90 }]}>Kayıt</Text>
+                <Text style={[styles.th, { width: 70, textAlign: 'center' }]}>Ziraat</Text>
+                <Text style={[styles.th, { width: 70, textAlign: 'center' }]}>İşBank</Text>
+                <Text style={[styles.th, { width: 70, textAlign: 'center' }]}>Garanti</Text>
+                <Text style={[styles.th, { width: 120, textAlign: 'right' }]}>Bakiye</Text>
+                <Text style={[styles.th, { width: 80, textAlign: 'right' }]}>İşlem</Text>
+              </View>
 
-          {(users ?? []).map((user, idx) => (
-            <View
-              key={user.id}
-              style={[styles.row, idx % 2 === 1 && styles.rowAlt]}
-            >
-              <View style={[styles.cell, { flex: 2 }]}>
-                <Text style={styles.cellName}>{user.fullName}</Text>
-                <Text style={styles.cellId}>#{user.id}</Text>
-              </View>
-              <Text style={[styles.cell, styles.cellText, { flex: 2.5 }]}>
-                {user.email}
-              </Text>
-              <View style={[styles.cell, { flex: 1 }]}>
-                <View style={[styles.badge, user.role === 'Admin' ? styles.badgeAdmin : styles.badgeUser]}>
-                  <Text style={styles.badgeText}>
-                    {user.role === 'Admin' ? 'Admin' : 'Müşteri'}
-                  </Text>
-                </View>
-              </View>
-              <View style={[styles.cell, { flex: 1 }]}>
-                <View style={[styles.badge, user.isActive ? styles.badgeActive : styles.badgeInactive]}>
-                  <Text style={styles.badgeText}>
-                    {user.isActive ? 'Aktif' : 'Pasif'}
-                  </Text>
-                </View>
-              </View>
-              <Text style={[styles.cell, styles.cellText, { flex: 1.5 }]}>
-                {formatDate(user.createdDate)}
-              </Text>
-              <View style={[styles.cell, { width: 90, flexDirection: 'row', justifyContent: 'flex-end', gap: 6 }]}>
-                <TouchableOpacity
-                  style={styles.editBtn}
-                  onPress={() => setEditTarget(user)}
-                >
-                  <Text style={styles.editBtnText}>✏️</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.deleteBtn}
-                  onPress={() => handleDelete(user)}
-                >
-                  <Text style={styles.deleteBtnText}>🗑️</Text>
-                </TouchableOpacity>
-              </View>
+              {(users ?? []).map((user, idx) => {
+                const credit = getCreditData(user.id);
+                return (
+                  <View
+                    key={user.id}
+                    style={[styles.row, idx % 2 === 1 && styles.rowAlt]}
+                  >
+                    {/* Name */}
+                    <View style={{ width: 130, paddingRight: 8 }}>
+                      <Text style={styles.cellName} numberOfLines={1}>{user.fullName}</Text>
+                      <Text style={styles.cellId}>#{user.id}</Text>
+                    </View>
+
+                    {/* Email */}
+                    <Text style={[styles.cellText, { width: 160, paddingRight: 8 }]} numberOfLines={1}>
+                      {user.email}
+                    </Text>
+
+                    {/* Role */}
+                    <View style={{ width: 70, paddingRight: 8 }}>
+                      <View style={[styles.badge, user.role === 'Admin' ? styles.badgeAdmin : styles.badgeUser]}>
+                        <Text style={styles.badgeText}>
+                          {user.role === 'Admin' ? 'Admin' : 'Müşteri'}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Status */}
+                    <View style={{ width: 60, paddingRight: 8 }}>
+                      <View style={[styles.badge, user.isActive ? styles.badgeActive : styles.badgeInactive]}>
+                        <Text style={styles.badgeText}>
+                          {user.isActive ? 'Aktif' : 'Pasif'}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Date */}
+                    <Text style={[styles.cellText, { width: 90, paddingRight: 8, fontSize: 11 }]}>
+                      {formatDate(user.createdDate)}
+                    </Text>
+
+                    {/* Ziraat score */}
+                    <View style={{ width: 70, alignItems: 'center', paddingRight: 8 }}>
+                      <Text style={[styles.scoreText, { color: scoreColor(credit.ziraat) }]}>
+                        {credit.ziraat}
+                      </Text>
+                      <Text style={styles.scoreBank}>Ziraat</Text>
+                    </View>
+
+                    {/* İşBank score */}
+                    <View style={{ width: 70, alignItems: 'center', paddingRight: 8 }}>
+                      <Text style={[styles.scoreText, { color: scoreColor(credit.isBank) }]}>
+                        {credit.isBank}
+                      </Text>
+                      <Text style={styles.scoreBank}>İşBank</Text>
+                    </View>
+
+                    {/* Garanti score */}
+                    <View style={{ width: 70, alignItems: 'center', paddingRight: 8 }}>
+                      <Text style={[styles.scoreText, { color: scoreColor(credit.garanti) }]}>
+                        {credit.garanti}
+                      </Text>
+                      <Text style={styles.scoreBank}>Garanti</Text>
+                    </View>
+
+                    {/* Balance */}
+                    <View style={{ width: 120, alignItems: 'flex-end', paddingRight: 8 }}>
+                      <Text
+                        style={[
+                          styles.balanceText,
+                          credit.hasHighBalance ? styles.balanceHigh : styles.balanceLow,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {formatBalance(credit.balance)}
+                      </Text>
+                      {credit.hasHighBalance ? (
+                        <Text style={styles.balanceTag}>✓ 5M+</Text>
+                      ) : (
+                        <Text style={styles.balanceTagLow}>✗ Düşük</Text>
+                      )}
+                    </View>
+
+                    {/* Actions */}
+                    <View style={{ width: 80, flexDirection: 'row', justifyContent: 'flex-end', gap: 6 }}>
+                      <TouchableOpacity
+                        style={styles.editBtn}
+                        onPress={() => setEditTarget(user)}
+                      >
+                        <Text style={styles.editBtnText}>✏️</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.deleteBtn}
+                        onPress={() => handleDelete(user)}
+                      >
+                        <Text style={styles.deleteBtnText}>🗑️</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                );
+              })}
             </View>
-          ))}
+          </ScrollView>
         </ScrollView>
       )}
 
@@ -188,7 +251,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e5e5e7',
   },
   th: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: '#86868b',
     textTransform: 'uppercase',
@@ -198,19 +261,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f2',
     backgroundColor: '#fff',
   },
   rowAlt: { backgroundColor: '#fafafa' },
-  cell: { paddingRight: 8 },
-  cellName: { fontSize: 14, fontWeight: '600', color: '#1d1d1f' },
-  cellId: { fontSize: 11, color: '#86868b', marginTop: 1 },
-  cellText: { fontSize: 13, color: '#1d1d1f' },
+  cellName: { fontSize: 13, fontWeight: '600', color: '#1d1d1f' },
+  cellId: { fontSize: 10, color: '#86868b', marginTop: 1 },
+  cellText: { fontSize: 12, color: '#1d1d1f' },
   badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
     borderRadius: 20,
     alignSelf: 'flex-start',
   },
@@ -218,23 +280,30 @@ const styles = StyleSheet.create({
   badgeUser: { backgroundColor: '#e5f0ff' },
   badgeActive: { backgroundColor: '#e5f9ee' },
   badgeInactive: { backgroundColor: '#f0f0f2' },
-  badgeText: { fontSize: 11, fontWeight: '600', color: '#1d1d1f' },
+  badgeText: { fontSize: 10, fontWeight: '600', color: '#1d1d1f' },
+  scoreText: { fontSize: 13, fontWeight: '700' },
+  scoreBank: { fontSize: 9, color: '#86868b', marginTop: 1 },
+  balanceText: { fontSize: 11, fontWeight: '700' },
+  balanceHigh: { color: '#34c759' },
+  balanceLow: { color: '#86868b' },
+  balanceTag: { fontSize: 9, color: '#34c759', fontWeight: '700', marginTop: 1 },
+  balanceTagLow: { fontSize: 9, color: '#ff3b30', fontWeight: '600', marginTop: 1 },
   editBtn: {
-    width: 32,
-    height: 32,
+    width: 30,
+    height: 30,
     borderRadius: 6,
     backgroundColor: '#f0f7ff',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  editBtnText: { fontSize: 14 },
+  editBtnText: { fontSize: 13 },
   deleteBtn: {
-    width: 32,
-    height: 32,
+    width: 30,
+    height: 30,
     borderRadius: 6,
     backgroundColor: '#fff0f0',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  deleteBtnText: { fontSize: 14 },
+  deleteBtnText: { fontSize: 13 },
 });

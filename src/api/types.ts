@@ -19,6 +19,21 @@ export interface AuthResponseDto {
   role: 'Customer' | 'Admin';
 }
 
+export interface ForgotPasswordDto {
+  email: string;
+}
+
+export interface ForgotPasswordResponseDto {
+  message: string;
+  resetCode: string;
+}
+
+export interface ResetPasswordDto {
+  email: string;
+  resetCode: string;
+  newPassword: string;
+}
+
 // ─── Users ───────────────────────────────────────────────────────────────────
 export interface UserDto {
   id: number;
@@ -94,6 +109,8 @@ export interface OrderItemDto {
 export interface OrderDto {
   id: number;
   userId: number;
+  userFullName: string;
+  userEmail: string;
   totalAmount: number;
   status: 'Pending' | 'Paid' | 'Shipped' | 'Cancelled';
   shippingAddress: string;

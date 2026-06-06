@@ -3,6 +3,9 @@ import type {
   LoginDto,
   RegisterDto,
   AuthResponseDto,
+  ForgotPasswordDto,
+  ForgotPasswordResponseDto,
+  ResetPasswordDto,
   UserDto,
   UserUpdateDto,
   ProductDto,
@@ -19,6 +22,12 @@ export const login = (data: LoginDto): Promise<AuthResponseDto> =>
 
 export const register = (data: RegisterDto): Promise<AuthResponseDto> =>
   apiClient.post('/auth/register', data).then((r) => r.data);
+
+export const forgotPassword = (data: ForgotPasswordDto): Promise<ForgotPasswordResponseDto> =>
+  apiClient.post('/auth/forgot-password', data).then((r) => r.data);
+
+export const resetPassword = (data: ResetPasswordDto): Promise<{ message: string }> =>
+  apiClient.post('/auth/reset-password', data).then((r) => r.data);
 
 // ─── Users (Admin) ───────────────────────────────────────────────────────────
 export const getUsers = (): Promise<UserDto[]> =>
@@ -62,4 +71,10 @@ export const getMyOrders = (): Promise<OrderDto[]> =>
 
 export const getAllOrders = (): Promise<OrderDto[]> =>
   apiClient.get('/orders').then((r) => r.data);
+
+export const approveOrder = (id: number): Promise<OrderDto> =>
+  apiClient.put(`/orders/${id}/approve`).then((r) => r.data);
+
+export const rejectOrder = (id: number): Promise<OrderDto> =>
+  apiClient.put(`/orders/${id}/reject`).then((r) => r.data);
 //api callları tek bir yerden yapılandırmak için
